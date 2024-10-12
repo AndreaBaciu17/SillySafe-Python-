@@ -6,32 +6,68 @@
 
 #import to encript text
 from cryptography.fernet import Fernet
+import base64
+import os
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-# Encripts password
+# ENCRIPTS PIN
 
-'''
+# Constants
+SALT_FILE = "salt.key"
+KEY_FILE = "sillySafe_key.key"
+PASSWORD_FILE = "Passwords.txt"
+
+# Function to generate or load salt
+def load_or_generate_salt():
+    if os.path.exists(SALT_FILE):
+        with open(SALT_FILE, "rb") as file:
+            return file.read()
+    else:
+        salt = os.urandom(16)
+        with open(SALT_FILE, "wb") as file:
+            file.write(salt)
+        return salt
+    
+    
 # function that creates password key to encript
 def create_passkey():
     sillySafe_key = Fernet.generate_key()
     with open("sillySafe_key.key", "wb") as sillySafe_key_file:
         sillySafe_key_file.write(sillySafe_key)
-create_passkey()
-'''
+    return sillySafe_key
+
+if not os.path.exists("sillySafe_key.key"):
+    create_passkey()
 
 #function that retrieves key and loads password
 def retreive_passkey():
-    sillySafe_key_file = open("sillySafe_key.key", "rb")
-    sillySafe_key = sillySafe_key_file.read()
-    sillySafe_key_file.close()
+    with open("sillySafe_key.key", "rb") as sillySafe_key_file:
+        sillySafe_key = sillySafe_key_file.read()
     return sillySafe_key
 
+# Function to derive key from PIN
+def derive_PIN_key(PIN):
+    salt = os.urandom(16)
+    kdf = PBKDF2HMAC(
+        algorithm = hashes.SHA256(),
+        length = 32,
+        # CONSTANTS
+        salt = salt,
+        iterations = 10000,
+    )
+    key = base64.urlsafe_b64encode(kdf.derive(PIN))
+    return key
 
-PIN_key = input("1. Enter PIN: ")
+# DISPLAYS PROGRAM
+def check_PIN():
+    return input("1. Enter PIN: ")
 
-sillySafe_key = retreive_passkey() + PIN_key.encode() #convert password into key by bytes
-initialize_Fernet = Fernet(sillySafe_key) #initializes the Fernet module
-
-    
+# Calling functions to derive keys
+sillySafe_key = retreive_passkey() # set call function to variable
+PINcheck_key = check_PIN().encode() #convert password into key by bytes
+derive_PIN_key(PINcheck_key) # set call function to another function
+initialize_Fernet = Fernet(sillySafe_key)  # Initialize the Fernet module
 
 # opens the existing passwords stored in file
 def view():
@@ -59,16 +95,19 @@ def add():
         passwords_file.write("\n\nUsername Key: " + user + "\n")
         passwords_file.write("Password Key: " + initialize_Fernet.encrypt(new_password.encode()).decode()) #takes bytes of string, decode the string instead of initializing
 
-
-# Displays program
-while True:
-    options = input("2. Would you like to add a new password (add)?\n3. Or view previous account(view)? \n4. Press 'q' or enter to quit ").lower()
-    if options in ("q", "", "4"):
-        break
-    if options in ("add", "a", "2"):
-        add() #preforms add function made
-    elif options in ("view", "v", "3"):
-        view() #preforms view function made
-    else:
-        print("Invalid option.")
-        continue
+# DISPLAYS PROGRAM
+if PINcheck_key:
+    print("Access granted.\n")
+    while True:
+        options = input("2. Would you like to add a new password (add)?\n3. Or view previous account(view)? \n4. Press 'q' or enter to quit ").lower()
+        if options in ("q", "", "4"):
+            break
+        if options in ("add", "a", "2"):
+            add() #preforms add function made
+        elif options in ("view", "v", "3"):
+            view() #preforms view function made
+        else:
+            print("Invalid option.")
+            continue
+else:
+    print("Incorrect PIN. Access denied.")
