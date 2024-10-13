@@ -12,22 +12,6 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 # ENCRIPTS PIN
-
-# Constants
-SALT_FILE = "salt.key"
-KEY_FILE = "sillySafe_key.key"
-PASSWORD_FILE = "Passwords.txt"
-
-# Function to generate or load salt
-def load_or_generate_salt():
-    if os.path.exists(SALT_FILE):
-        with open(SALT_FILE, "rb") as file:
-            return file.read()
-    else:
-        salt = os.urandom(16)
-        with open(SALT_FILE, "wb") as file:
-            file.write(salt)
-        return salt
     
     
 # function that creates password key to encript
