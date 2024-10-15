@@ -34,8 +34,8 @@ Password Key: gAAAAABnBXMXA_exzkld7XyHB_gCa_fHLlzwckeW93WCoR4W0zzJ0BMjB_v
 ## How to Run the Code  
 1. Clone the Repository:
  ```
-   git clone https://github.com/AndreaBaciu17/SillySafe-Python.git
-   cd SillySafe
+   git clone https://github.com/AndreaBaciu17/SillySafe-Python-.git
+   cd SillySafe-Python-
  ```
 2. Install the Cryptography Module:
  ```
